@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Create your AstroParks.io account">
+  <title>Create Account — AstroParks.io</title>
+  <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+  <div class="page">
+    <div class="card">
+
+      <a href="/" class="logo" aria-label="AstroParks.io home">
+        <span class="logo-star" aria-hidden="true">★</span>
+        <span class="logo-text">Astro<span>Parks</span>.io</span>
+      </a>
+
+      <h1>Create your account</h1>
+      <p class="subtitle">Join AstroParks.io to reserve your spot under the stars</p>
+
+      <div id="alert" class="alert" role="alert" aria-live="polite"></div>
+
+      <form id="registerForm" novalidate>
+
+        <div class="form-group">
+          <label for="username">Username</label>
+          <input
+            type="text"
+            id="username"
+            name="username"
+            placeholder="stargazer42"
+            autocomplete="username"
+            autocapitalize="none"
+            minlength="3"
+            maxlength="30"
+            required
+          >
+        </div>
+
+        <div class="form-group">
+          <label for="email">Email Address</label>
+          <input
+            type="email"
+            id="email"
+            name="email"
+            placeholder="you@example.com"
+            autocomplete="email"
+            autocapitalize="none"
+            required
+          >
+        </div>
+
+        <div class="form-group">
+          <label for="phone">Phone Number</label>
+          <input
+            type="tel"
+            id="phone"
+            name="phone"
+            placeholder="+1 (555) 000-0000"
+            autocomplete="tel"
+            required
+          >
+        </div>
+
+        <div class="form-group">
+          <label for="license_plate">Vehicle License Plate</label>
+          <input
+            type="text"
+            id="license_plate"
+            name="license_plate"
+            placeholder="ABC-1234"
+            autocomplete="off"
+            autocapitalize="characters"
+            maxlength="15"
+            required
+          >
+        </div>
+
+        <div class="form-group">
+          <label for="password">Password</label>
+          <input
+            type="password"
+            id="password"
+            name="password"
+            placeholder="At least 8 characters"
+            autocomplete="new-password"
+            minlength="8"
+            required
+          >
+          <p class="password-hint">Minimum 8 characters</p>
+        </div>
+
+        <div class="form-group">
+          <label for="confirm_password">Confirm Password</label>
+          <input
+            type="password"
+            id="confirm_password"
+            name="confirm_password"
+            placeholder="Repeat your password"
+            autocomplete="new-password"
+            required
+          >
+        </div>
+
+        <button type="submit" class="btn btn-primary" id="submitBtn">
+          Create Account
+        </button>
+
+      </form>
+
+      <div class="link-row">
+        <span>Already have an account? <a href="/login.html">Sign in</a></span>
+      </div>
+
+    </div>
+  </div>
+
+  <script src="/js/register.js"></script>
+</body>
+</html>

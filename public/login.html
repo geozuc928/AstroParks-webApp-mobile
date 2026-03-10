@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Sign in to your AstroParks.io account">
+  <title>Sign In — AstroParks.io</title>
+  <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+  <div class="page">
+    <div class="card">
+
+      <a href="/" class="logo" aria-label="AstroParks.io home">
+        <span class="logo-star" aria-hidden="true">★</span>
+        <span class="logo-text">Astro<span>Parks</span>.io</span>
+      </a>
+
+      <h1>Welcome back</h1>
+      <p class="subtitle">Sign in to your account to continue</p>
+
+      <div id="alert" class="alert" role="alert" aria-live="polite"></div>
+
+      <form id="loginForm" novalidate>
+        <div class="form-group">
+          <label for="identifier">Email or Username</label>
+          <input
+            type="text"
+            id="identifier"
+            name="identifier"
+            placeholder="you@example.com"
+            autocomplete="username"
+            autocapitalize="none"
+            required
+          >
+        </div>
+
+        <div class="form-group">
+          <label for="password">Password</label>
+          <input
+            type="password"
+            id="password"
+            name="password"
+            placeholder="Enter your password"
+            autocomplete="current-password"
+            required
+          >
+        </div>
+
+        <button type="submit" class="btn btn-primary" id="submitBtn">
+          Sign In
+        </button>
+      </form>
+
+      <div class="link-row">
+        <span>Don't have an account? <a href="/register.html">Sign up</a></span>
+        <a href="/forgot-password.html">Forgot password?</a>
+      </div>
+
+    </div>
+  </div>
+
+  <script src="/js/login.js"></script>
+</body>
+</html>

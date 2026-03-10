@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard — AstroParks.io</title>
+  <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+  <div id="loading">Loading…</div>
+
+  <div class="dashboard-page hidden" id="app">
+    <header class="dashboard-header">
+      <a href="/" class="logo" aria-label="AstroParks.io home">
+        <span class="logo-star" aria-hidden="true">★</span>
+        <span class="logo-text">Astro<span>Parks</span>.io</span>
+      </a>
+      <div class="header-actions">
+        <span class="badge badge-admin">Admin</span>
+        <span id="headerUser" class="text-small"></span>
+        <button class="btn btn-secondary" id="logoutBtn" style="width:auto;padding:6px 14px;font-size:13px;">
+          Sign Out
+        </button>
+      </div>
+    </header>
+
+    <main class="dashboard-main">
+      <h2>Admin Dashboard</h2>
+
+      <div class="stat-row" id="statRow">
+        <div class="stat-card">
+          <div class="stat-value" id="statTotal">—</div>
+          <div class="stat-label">Total Users</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value" id="statVerified">—</div>
+          <div class="stat-label">Verified</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value" id="statManagers">—</div>
+          <div class="stat-label">Managers</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value" id="statAdmins">—</div>
+          <div class="stat-label">Admins</div>
+        </div>
+      </div>
+
+      <div id="alert" class="alert" role="alert" aria-live="polite"></div>
+
+      <div class="search-bar">
+        <input type="text" id="searchInput" placeholder="Search by username, email, or plate…">
+      </div>
+
+      <div class="table-wrapper">
+        <table>
+          <thead>
+            <tr>
+              <th>Username</th>
+              <th>Email</th>
+              <th>Phone</th>
+              <th>License Plate</th>
+              <th>Property</th>
+              <th>Status</th>
+              <th>Role</th>
+              <th>Joined</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="userTableBody">
+            <tr><td colspan="9" style="text-align:center;color:var(--text-muted);padding:32px;">Loading users…</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </main>
+  </div>
+
+  <script src="/js/dashboard.js"></script>
+  <script>
+    initDashboard({ role: 'admin' });
+  </script>
+</body>
+</html>
