@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AstroParks – Parking Lot Calibration</title>
+  <link rel="stylesheet" href="css/styles.css">
+  <link rel="stylesheet" href="css/calibration.css">
+</head>
+<body>
+  <div class="cal-layout">
+
+    <!-- ── Header ──────────────────────────────────────────────────────── -->
+    <header class="cal-header">
+      <div class="cal-header-left">
+        <span class="cal-logo">★ AstroParks</span>
+        <span class="cal-title">Parking Lot Calibration Tool</span>
+      </div>
+      <div class="cal-header-actions">
+        <button id="btn-load-image" class="btn-cal">📷 Load Image</button>
+        <button id="btn-save"       class="btn-cal btn-primary">💾 Save to Server</button>
+        <button id="btn-load-cfg"   class="btn-cal">📂 Load Config</button>
+        <button id="btn-export"     class="btn-cal">⬇ Export JSON</button>
+        <button id="btn-import"     class="btn-cal">⬆ Import JSON</button>
+        <input type="file" id="file-image"  accept="image/*"  style="display:none">
+        <input type="file" id="file-import" accept=".json"    style="display:none">
+      </div>
+    </header>
+
+    <!-- ── Toolbar ─────────────────────────────────────────────────────── -->
+    <div class="cal-toolbar">
+      <div class="tool-group">
+        <span class="tool-label">Mode:</span>
+        <button class="btn-tool active" data-mode="draw"   id="mode-draw">✏ Draw</button>
+        <button class="btn-tool"        data-mode="select" id="mode-select">↖ Select</button>
+        <button class="btn-tool"        data-mode="delete" id="mode-delete">✕ Delete</button>
+      </div>
+      <div class="tool-separator"></div>
+      <div class="tool-group">
+        <span class="tool-label">Camera:</span>
+        <select id="camera-select">
+          <option value="camera_0">Camera 0 (Default)</option>
+          <option value="camera_1">Camera 1</option>
+          <option value="camera_2">Camera 2</option>
+          <option value="camera_3">Camera 3</option>
+        </select>
+      </div>
+      <div class="tool-separator"></div>
+      <div class="tool-group">
+        <button id="btn-undo"      class="btn-tool">↩ Undo</button>
+        <button id="btn-clear-all" class="btn-tool btn-danger">Clear All</button>
+      </div>
+      <div class="tool-separator"></div>
+      <div class="tool-group">
+        <span class="tool-label">Zoom:</span>
+        <button id="btn-zoom-in"  class="btn-tool">＋</button>
+        <button id="btn-zoom-out" class="btn-tool">－</button>
+        <button id="btn-zoom-fit" class="btn-tool">⤢ Fit</button>
+      </div>
+    </div>
+
+    <!-- ── Main Content ─────────────────────────────────────────────────── -->
+    <div class="cal-main">
+
+      <!-- Left panel: space list -->
+      <aside class="cal-panel cal-panel-left">
+        <div class="panel-header">
+          <h3>Parking Spaces</h3>
+          <span id="cal-progress" class="cal-progress">0 / 48</span>
+        </div>
+        <div id="space-list" class="space-list">
+          <!-- Populated by calibration.js -->
+        </div>
+      </aside>
+
+      <!-- Canvas area -->
+      <div class="cal-canvas-container" id="canvas-container">
+        <div class="cal-canvas-placeholder" id="canvas-placeholder">
+          <div class="placeholder-icon">📷</div>
+          <p>Load a parking lot image to begin calibration</p>
+          <button id="btn-load-image-center" class="btn-cal btn-primary">Load Image</button>
+        </div>
+        <canvas id="calibration-canvas"></canvas>
+      </div>
+
+      <!-- Right panel: space details + instructions -->
+      <aside class="cal-panel cal-panel-right">
+        <div class="panel-header">
+          <h3>Selected Space</h3>
+        </div>
+        <div id="space-details" class="space-details">
+          <p class="text-muted">No space selected.<br>Select a space from the list or click a polygon.</p>
+        </div>
+
+        <div class="panel-header">
+          <h3>Instructions</h3>
+        </div>
+        <div class="instructions">
+          <div class="instruction-item">
+            <span class="key">Click</span>&nbsp;Add polygon point
+          </div>
+          <div class="instruction-item">
+            <span class="key">Dbl-click</span>&nbsp;Close polygon
+          </div>
+          <div class="instruction-item">
+            <span class="key">Enter</span>&nbsp;Finish polygon
+          </div>
+          <div class="instruction-item">
+            <span class="key">ESC</span>&nbsp;Cancel drawing
+          </div>
+          <div class="instruction-item">
+            <span class="key">Del</span>&nbsp;Delete selected
+          </div>
+          <div class="instruction-item">
+            <span class="key">Ctrl+Z</span>&nbsp;Undo
+          </div>
+          <div class="instruction-item">
+            <span class="key">Scroll</span>&nbsp;Zoom in/out
+          </div>
+          <div class="instruction-item">
+            <span class="key">Middle drag</span>&nbsp;Pan
+          </div>
+        </div>
+      </aside>
+
+    </div>
+
+    <!-- Status bar -->
+    <div class="cal-status" id="status-bar">
+      Ready — Load a parking lot image to begin calibration
+    </div>
+
+  </div>
+
+  <script src="js/calibration.js"></script>
+</body>
+</html>

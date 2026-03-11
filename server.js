@@ -10,6 +10,7 @@ require('./db');
 
 const authRoutes = require('./routes/auth');
 const dashboardRoutes = require('./routes/dashboard');
+const calibrationRoutes = require('./routes/calibration');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -48,6 +49,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 // ── API Routes ─────────────────────────────────────────────────────────────
 app.use('/api/auth', authRoutes);
 app.use('/api/dashboard', dashboardRoutes);
+app.use('/api/calibration', calibrationRoutes);
 
 // ── Root redirect ──────────────────────────────────────────────────────────
 app.get('/', (req, res) => res.redirect('/login.html'));
