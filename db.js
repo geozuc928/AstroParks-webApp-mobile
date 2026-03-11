@@ -40,6 +40,30 @@ db.exec(`
   CREATE INDEX IF NOT EXISTS idx_users_username ON users(username);
   CREATE INDEX IF NOT EXISTS idx_users_verification_token ON users(verification_token);
   CREATE INDEX IF NOT EXISTS idx_users_reset_token ON users(reset_token);
+
+  CREATE TABLE IF NOT EXISTS calibration_configs (
+    id         INTEGER PRIMARY KEY AUTOINCREMENT,
+    camera_id  TEXT NOT NULL UNIQUE,
+    label      TEXT NOT NULL DEFAULT 'Parking Lot',
+    img_width  INTEGER,
+    img_height INTEGER,
+    created_at INTEGER DEFAULT (unixepoch()),
+    updated_at INTEGER DEFAULT (unixepoch())
+  );
+
+  CREATE TABLE IF NOT EXISTS parking_space_polygons (
+    id             INTEGER PRIMARY KEY AUTOINCREMENT,
+    config_id      INTEGER NOT NULL REFERENCES calibration_configs(id) ON DELETE CASCADE,
+    space_id       INTEGER NOT NULL,
+    space_label    TEXT NOT NULL,
+    section        TEXT NOT NULL,
+    polygon_points TEXT NOT NULL,
+    created_at     INTEGER DEFAULT (unixepoch()),
+    updated_at     INTEGER DEFAULT (unixepoch()),
+    UNIQUE(config_id, space_id)
+  );
+
+  CREATE INDEX IF NOT EXISTS idx_polygons_config ON parking_space_polygons(config_id);
 `);
 
 // --- Seed default admin user ---

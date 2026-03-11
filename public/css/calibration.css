@@ -1,0 +1,523 @@
+/* ── Calibration Tool Layout ────────────────────────────────────────────── */
+
+.cal-layout {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow: hidden;
+  position: relative;
+  z-index: 1;
+}
+
+/* ── Header ───────────────────────────────────────────────────────────────── */
+.cal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 1rem;
+  height: 54px;
+  background: var(--bg-card);
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+  gap: 1rem;
+}
+
+.cal-header-left {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.cal-logo {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--accent);
+  white-space: nowrap;
+}
+
+.cal-title {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text);
+  white-space: nowrap;
+}
+
+.cal-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: nowrap;
+}
+
+/* ── Toolbar ──────────────────────────────────────────────────────────────── */
+.cal-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  padding: 0 1rem;
+  height: 46px;
+  background: var(--bg-card-alt);
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.tool-group {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.tool-label {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+.tool-separator {
+  width: 1px;
+  height: 24px;
+  background: var(--border);
+  flex-shrink: 0;
+}
+
+/* ── Main Content ─────────────────────────────────────────────────────────── */
+.cal-main {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
+/* ── Side Panels ──────────────────────────────────────────────────────────── */
+.cal-panel {
+  background: var(--bg-card);
+  border-color: var(--border);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.cal-panel-left {
+  width: 195px;
+  border-right: 1px solid var(--border);
+}
+
+.cal-panel-right {
+  width: 215px;
+  border-left: 1px solid var(--border);
+}
+
+.panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.55rem 0.75rem;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.panel-header h3 {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* ── Progress Badge ───────────────────────────────────────────────────────── */
+.cal-progress {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--accent);
+  background: rgba(79, 142, 247, 0.15);
+  padding: 0.2rem 0.5rem;
+  border-radius: 20px;
+}
+
+/* ── Space List ───────────────────────────────────────────────────────────── */
+.space-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0.4rem 0;
+}
+
+.space-list::-webkit-scrollbar {
+  width: 5px;
+}
+.space-list::-webkit-scrollbar-track {
+  background: transparent;
+}
+.space-list::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 3px;
+}
+
+.section-header {
+  padding: 0.45rem 0.75rem 0.2rem;
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+}
+
+.space-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.3rem 0.75rem;
+  cursor: pointer;
+  transition: background var(--transition);
+  border-left: 3px solid transparent;
+  font-size: 0.82rem;
+}
+
+.space-item:hover {
+  background: rgba(79, 142, 247, 0.08);
+}
+
+.space-item.selected {
+  background: rgba(79, 142, 247, 0.18);
+  border-left-color: var(--accent);
+}
+
+.space-item.calibrated .space-dot {
+  background: var(--success);
+  box-shadow: 0 0 5px rgba(52, 211, 153, 0.5);
+}
+
+.space-item.active-drawing {
+  background: rgba(251, 191, 36, 0.15);
+  border-left-color: var(--warning);
+}
+
+.space-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--border);
+  flex-shrink: 0;
+}
+
+.space-num {
+  font-weight: 600;
+  color: var(--text);
+  min-width: 22px;
+}
+
+.space-lbl {
+  color: var(--text-muted);
+  font-size: 0.75rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ── Canvas Area ──────────────────────────────────────────────────────────── */
+.cal-canvas-container {
+  flex: 1;
+  background: #050d1a;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.cal-canvas-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  color: var(--text-muted);
+  text-align: center;
+}
+
+.placeholder-icon {
+  font-size: 3rem;
+  opacity: 0.4;
+}
+
+.cal-canvas-placeholder p {
+  font-size: 0.9rem;
+}
+
+#calibration-canvas {
+  display: block;
+  position: absolute;
+  top: 0;
+  left: 0;
+  cursor: crosshair;
+}
+
+#calibration-canvas.mode-select { cursor: default; }
+#calibration-canvas.mode-delete { cursor: not-allowed; }
+
+/* ── Right Panel ──────────────────────────────────────────────────────────── */
+.space-details {
+  padding: 0.75rem;
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  font-size: 0.82rem;
+}
+
+.detail-row {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.detail-row label {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.detail-value {
+  color: var(--text);
+  font-weight: 500;
+}
+
+.detail-badge {
+  display: inline-block;
+  padding: 0.15rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.72rem;
+  font-weight: 600;
+}
+
+.badge-calibrated {
+  background: rgba(52, 211, 153, 0.15);
+  color: var(--success);
+  border: 1px solid rgba(52, 211, 153, 0.3);
+}
+
+.badge-pending {
+  background: rgba(251, 191, 36, 0.1);
+  color: var(--warning);
+  border: 1px solid rgba(251, 191, 36, 0.25);
+}
+
+.badge-drawing {
+  background: rgba(79, 142, 247, 0.15);
+  color: var(--accent);
+  border: 1px solid rgba(79, 142, 247, 0.3);
+}
+
+.points-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  max-height: 130px;
+  overflow-y: auto;
+}
+
+.points-list li {
+  font-family: monospace;
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  background: rgba(255,255,255,0.03);
+  padding: 0.15rem 0.4rem;
+  border-radius: 3px;
+}
+
+/* ── Instructions ─────────────────────────────────────────────────────────── */
+.instructions {
+  padding: 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
+.instruction-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.key {
+  background: rgba(255,255,255,0.07);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 0.1rem 0.4rem;
+  font-size: 0.7rem;
+  font-family: monospace;
+  color: var(--text);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+/* ── Status Bar ───────────────────────────────────────────────────────────── */
+.cal-status {
+  height: 28px;
+  line-height: 28px;
+  padding: 0 1rem;
+  background: var(--bg-card);
+  border-top: 1px solid var(--border);
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  flex-shrink: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cal-status.status-drawing { color: var(--accent); }
+.cal-status.status-success { color: var(--success); }
+.cal-status.status-warning { color: var(--warning); }
+.cal-status.status-error   { color: var(--error); }
+
+/* ── Buttons ──────────────────────────────────────────────────────────────── */
+.btn-cal {
+  height: 30px;
+  padding: 0 0.7rem;
+  font-size: 0.78rem;
+  font-weight: 500;
+  background: rgba(255,255,255,0.05);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: background var(--transition), border-color var(--transition);
+  white-space: nowrap;
+  font-family: inherit;
+}
+
+.btn-cal:hover {
+  background: rgba(255,255,255,0.1);
+  border-color: rgba(255,255,255,0.2);
+}
+
+.btn-cal.btn-primary {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+.btn-cal.btn-primary:hover {
+  background: var(--accent-hover);
+  border-color: var(--accent-hover);
+}
+
+.btn-cal.btn-danger {
+  background: rgba(248,113,113,0.12);
+  border-color: rgba(248,113,113,0.3);
+  color: var(--error);
+}
+.btn-cal.btn-danger:hover {
+  background: rgba(248,113,113,0.22);
+}
+
+.btn-tool {
+  height: 28px;
+  padding: 0 0.6rem;
+  font-size: 0.78rem;
+  font-weight: 500;
+  background: rgba(255,255,255,0.04);
+  color: var(--text-muted);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: background var(--transition), color var(--transition);
+  font-family: inherit;
+  white-space: nowrap;
+}
+
+.btn-tool:hover {
+  background: rgba(255,255,255,0.09);
+  color: var(--text);
+}
+
+.btn-tool.active {
+  background: rgba(79, 142, 247, 0.2);
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.btn-tool.btn-danger {
+  color: var(--error);
+  border-color: rgba(248,113,113,0.3);
+}
+.btn-tool.btn-danger:hover {
+  background: rgba(248,113,113,0.12);
+}
+
+/* ── Camera select ────────────────────────────────────────────────────────── */
+.cal-toolbar select {
+  height: 28px;
+  padding: 0 0.5rem;
+  font-size: 0.78rem;
+  background: rgba(255,255,255,0.05);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.cal-toolbar select:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+/* ── Toast notification ───────────────────────────────────────────────────── */
+.cal-toast {
+  position: fixed;
+  bottom: 2.5rem;
+  left: 50%;
+  transform: translateX(-50%) translateY(0);
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 0.5rem 1.25rem;
+  font-size: 0.85rem;
+  color: var(--text);
+  box-shadow: var(--shadow);
+  z-index: 1000;
+  animation: toastIn 0.2s ease;
+  pointer-events: none;
+}
+.cal-toast.toast-success { border-color: var(--success); color: var(--success); }
+.cal-toast.toast-error   { border-color: var(--error);   color: var(--error); }
+
+@keyframes toastIn {
+  from { opacity: 0; transform: translateX(-50%) translateY(8px); }
+  to   { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+
+.text-muted { color: var(--text-muted); font-size: 0.82rem; }
+
+/* ── Delete button in details panel ──────────────────────────────────────── */
+.btn-detail-delete {
+  width: 100%;
+  margin-top: 0.5rem;
+  padding: 0.4rem;
+  font-size: 0.78rem;
+  font-family: inherit;
+  background: rgba(248,113,113,0.1);
+  border: 1px solid rgba(248,113,113,0.3);
+  border-radius: var(--radius-sm);
+  color: var(--error);
+  cursor: pointer;
+  transition: background var(--transition);
+}
+.btn-detail-delete:hover {
+  background: rgba(248,113,113,0.2);
+}
+
+/* ── Section color dots ───────────────────────────────────────────────────── */
+.dot-TOP_ROW     { background: #22d3ee; }
+.dot-ROW_A       { background: #34d399; }
+.dot-ROW_B       { background: #a855f7; }
+.dot-BOTTOM_ROW  { background: #f97316; }
+.dot-LEFT_SIDE   { background: #4f8ef7; }
+.dot-RIGHT_SIDE  { background: #fbbf24; }
