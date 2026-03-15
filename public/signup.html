@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Sign up for AstroParks.io">
+  <title>Sign Up — AstroParks.io</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+  <style>
+    /* ── Design Tokens ───────────────────────────────────────────────────── */
+    :root {
+      --bg:           #0a1628;
+      --bg-card:      #0f2044;
+      --accent:       #4f8ef7;
+      --accent-hover: #3a7ae8;
+      --accent-glow:  rgba(79, 142, 247, 0.25);
+      --text:         #e8f0fe;
+      --text-muted:   #7a9cc9;
+      --input-bg:     #ffffff;
+      --input-text:   #111827;
+      --input-border: #d1d5db;
+      --input-focus:  #4f8ef7;
+      --border:       #1e3a5f;
+      --error:        #f87171;
+      --error-bg:     rgba(248, 113, 113, 0.12);
+      --success:      #34d399;
+      --success-bg:   rgba(52, 211, 153, 0.12);
+      --radius:       12px;
+      --radius-sm:    8px;
+      --shadow:       0 8px 32px rgba(0, 0, 0, 0.4);
+      --transition:   0.2s ease;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html { font-size: 16px; -webkit-text-size-adjust: 100%; }
+
+    body {
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      line-height: 1.5;
+      overflow-x: hidden;
+    }
+
+    /* ── Star field ──────────────────────────────────────────────────────── */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        radial-gradient(1px 1px at 10% 15%, rgba(255,255,255,0.6) 0%, transparent 100%),
+        radial-gradient(1px 1px at 25% 40%, rgba(255,255,255,0.4) 0%, transparent 100%),
+        radial-gradient(1.5px 1.5px at 50% 10%, rgba(255,255,255,0.7) 0%, transparent 100%),
+        radial-gradient(1px 1px at 70% 25%, rgba(255,255,255,0.5) 0%, transparent 100%),
+        radial-gradient(1px 1px at 85% 60%, rgba(255,255,255,0.4) 0%, transparent 100%),
+        radial-gradient(2px 2px at 35% 70%, rgba(255,255,255,0.3) 0%, transparent 100%),
+        radial-gradient(1px 1px at 60% 80%, rgba(255,255,255,0.5) 0%, transparent 100%),
+        radial-gradient(1.5px 1.5px at 90% 5%, rgba(255,255,255,0.6) 0%, transparent 100%),
+        radial-gradient(1px 1px at 5% 85%, rgba(255,255,255,0.4) 0%, transparent 100%),
+        radial-gradient(1px 1px at 45% 55%, rgba(255,255,255,0.35) 0%, transparent 100%),
+        radial-gradient(1px 1px at 78% 45%, rgba(255,255,255,0.5) 0%, transparent 100%),
+        radial-gradient(1px 1px at 20% 90%, rgba(255,255,255,0.4) 0%, transparent 100%),
+        radial-gradient(2px 2px at 65% 35%, rgba(255,255,255,0.3) 0%, transparent 100%),
+        radial-gradient(1px 1px at 15% 55%, rgba(255,255,255,0.45) 0%, transparent 100%),
+        radial-gradient(1px 1px at 95% 75%, rgba(255,255,255,0.4) 0%, transparent 100%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* ── Layout ──────────────────────────────────────────────────────────── */
+    .page {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 24px 16px;
+    }
+
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      width: 100%;
+      max-width: 420px;
+      padding: 32px 28px;
+    }
+
+    @media (min-width: 480px) {
+      .card { padding: 40px 36px; max-width: 460px; }
+    }
+
+    /* ── Logo ────────────────────────────────────────────────────────────── */
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 28px;
+      text-decoration: none;
+    }
+
+    .logo-star {
+      font-size: 28px;
+      line-height: 1;
+      color: var(--accent);
+      filter: drop-shadow(0 0 8px var(--accent-glow));
+    }
+
+    .logo-text {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--text);
+      letter-spacing: -0.3px;
+    }
+
+    .logo-text span { color: var(--accent); }
+
+    /* ── Headings ────────────────────────────────────────────────────────── */
+    .card h1 {
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 6px;
+      letter-spacing: -0.3px;
+    }
+
+    .card .subtitle {
+      font-size: 14px;
+      color: var(--text-muted);
+      margin-bottom: 28px;
+    }
+
+    /* ── Form ────────────────────────────────────────────────────────────── */
+    .form-group { margin-bottom: 18px; }
+
+    label {
+      display: block;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    input[type="text"],
+    input[type="email"],
+    input[type="password"] {
+      width: 100%;
+      padding: 12px 14px;
+      background: var(--input-bg);
+      color: var(--input-text);
+      border: 1.5px solid var(--input-border);
+      border-radius: var(--radius-sm);
+      font-family: inherit;
+      font-size: 15px;
+      line-height: 1.4;
+      outline: none;
+      transition: border-color var(--transition), box-shadow var(--transition);
+      -webkit-appearance: none;
+      appearance: none;
+    }
+
+    input:focus {
+      border-color: var(--input-focus);
+      box-shadow: 0 0 0 3px var(--accent-glow);
+    }
+
+    input::placeholder { color: #9ca3af; }
+
+    .password-hint {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-top: 5px;
+    }
+
+    /* ── Button ──────────────────────────────────────────────────────────── */
+    .btn {
+      display: block;
+      width: 100%;
+      padding: 13px 20px;
+      border: none;
+      border-radius: var(--radius-sm);
+      font-family: inherit;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      text-align: center;
+      transition: background-color var(--transition), transform var(--transition), box-shadow var(--transition);
+      -webkit-appearance: none;
+      appearance: none;
+    }
+
+    .btn-primary {
+      background: var(--accent);
+      color: #fff;
+      box-shadow: 0 4px 16px rgba(79, 142, 247, 0.3);
+    }
+
+    .btn-primary:hover:not(:disabled) {
+      background: var(--accent-hover);
+      box-shadow: 0 4px 20px rgba(79, 142, 247, 0.5);
+      transform: translateY(-1px);
+    }
+
+    .btn-primary:active:not(:disabled) { transform: translateY(0); }
+
+    .btn:disabled { opacity: 0.65; cursor: not-allowed; }
+
+    /* ── Alert ───────────────────────────────────────────────────────────── */
+    .alert {
+      padding: 12px 14px;
+      border-radius: var(--radius-sm);
+      font-size: 14px;
+      line-height: 1.5;
+      margin-bottom: 20px;
+      display: none;
+    }
+
+    .alert.show { display: block; }
+
+    .alert-error {
+      background: var(--error-bg);
+      color: var(--error);
+      border: 1px solid rgba(248, 113, 113, 0.3);
+    }
+
+    .alert-success {
+      background: var(--success-bg);
+      color: var(--success);
+      border: 1px solid rgba(52, 211, 153, 0.3);
+    }
+
+    /* ── Spinner ─────────────────────────────────────────────────────────── */
+    .spinner {
+      display: inline-block;
+      width: 16px;
+      height: 16px;
+      border: 2px solid rgba(255,255,255,0.3);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      vertical-align: middle;
+      margin-right: 6px;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── Link row ────────────────────────────────────────────────────────── */
+    .link-row {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin-top: 20px;
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+
+    .link-row a {
+      color: var(--accent);
+      text-decoration: none;
+      font-weight: 500;
+    }
+
+    .link-row a:hover { text-decoration: underline; }
+
+    /* ── Success state ───────────────────────────────────────────────────── */
+    .success-body {
+      text-align: center;
+      padding: 8px 0;
+    }
+
+    .success-icon {
+      font-size: 48px;
+      margin-bottom: 16px;
+      filter: drop-shadow(0 0 12px rgba(52, 211, 153, 0.4));
+    }
+
+    .success-body h2 {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--success);
+      margin-bottom: 10px;
+    }
+
+    .success-body p {
+      font-size: 14px;
+      color: var(--text-muted);
+      line-height: 1.6;
+    }
+
+    .success-body a {
+      color: var(--accent);
+      text-decoration: none;
+      font-weight: 500;
+    }
+
+    .success-body a:hover { text-decoration: underline; }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <div class="card">
+
+      <a href="/login.html" class="logo" aria-label="AstroParks.io home">
+        <span class="logo-star" aria-hidden="true">★</span>
+        <span class="logo-text">Astro<span>Parks</span>.io</span>
+      </a>
+
+      <!-- ── Form view ──────────────────────────────────────────────────── -->
+      <div id="formView">
+        <h1>Create your account</h1>
+        <p class="subtitle">Join AstroParks.io to reserve your spot under the stars</p>
+
+        <div id="alert" class="alert" role="alert" aria-live="polite"></div>
+
+        <form id="signupForm" novalidate>
+
+          <div class="form-group">
+            <label for="email">Email Address</label>
+            <input
+              type="email"
+              id="email"
+              name="email"
+              placeholder="you@example.com"
+              autocomplete="email"
+              autocapitalize="none"
+              required
+            >
+          </div>
+
+          <div class="form-group">
+            <label for="license_plate">Vehicle License Plate</label>
+            <input
+              type="text"
+              id="license_plate"
+              name="license_plate"
+              placeholder="ABC-1234"
+              autocomplete="off"
+              autocapitalize="characters"
+              maxlength="15"
+              required
+            >
+          </div>
+
+          <div class="form-group">
+            <label for="password">Password</label>
+            <input
+              type="password"
+              id="password"
+              name="password"
+              placeholder="At least 8 characters"
+              autocomplete="new-password"
+              minlength="8"
+              required
+            >
+            <p class="password-hint">Minimum 8 characters</p>
+          </div>
+
+          <div class="form-group">
+            <label for="confirm_password">Confirm Password</label>
+            <input
+              type="password"
+              id="confirm_password"
+              name="confirm_password"
+              placeholder="Repeat your password"
+              autocomplete="new-password"
+              required
+            >
+          </div>
+
+          <button type="submit" class="btn btn-primary" id="submitBtn">
+            Create Account
+          </button>
+
+        </form>
+
+        <div class="link-row">
+          <span>Already have an account? <a href="/login.html">Sign in</a></span>
+        </div>
+      </div>
+
+      <!-- ── Success view ───────────────────────────────────────────────── -->
+      <div id="successView" style="display:none">
+        <div class="success-body">
+          <div class="success-icon">✅</div>
+          <h2>Account Created!</h2>
+          <p id="successMsg">Please check your email to verify your account before logging in.</p>
+          <p style="margin-top:20px">
+            <a href="/login.html">Go to Sign In →</a>
+          </p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      'use strict';
+
+      const form      = document.getElementById('signupForm');
+      const alertEl   = document.getElementById('alert');
+      const submitBtn = document.getElementById('submitBtn');
+      const pwInput   = document.getElementById('password');
+      const cpInput   = document.getElementById('confirm_password');
+      const plateInput = document.getElementById('license_plate');
+
+      // Live password-match feedback
+      cpInput.addEventListener('input', () => {
+        cpInput.style.borderColor =
+          (cpInput.value && cpInput.value !== pwInput.value) ? 'var(--error)' : '';
+      });
+
+      // Auto-uppercase license plate, preserve cursor position
+      plateInput.addEventListener('input', () => {
+        const pos = plateInput.selectionStart;
+        plateInput.value = plateInput.value.toUpperCase();
+        plateInput.setSelectionRange(pos, pos);
+      });
+
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        clearAlert();
+
+        const email           = document.getElementById('email').value.trim();
+        const license_plate   = plateInput.value.trim();
+        const password        = pwInput.value;
+        const confirm_password = cpInput.value;
+
+        if (!email || !license_plate || !password || !confirm_password) {
+          return showAlert('error', 'Please fill in all fields');
+        }
+        if (password !== confirm_password) {
+          return showAlert('error', 'Passwords do not match');
+        }
+        if (password.length < 8) {
+          return showAlert('error', 'Password must be at least 8 characters');
+        }
+
+        setLoading(true);
+
+        try {
+          const res  = await fetch('/api/auth/register', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, license_plate, password, confirm_password }),
+          });
+          const data = await res.json();
+
+          if (!res.ok) {
+            showAlert('error', data.error || 'Registration failed. Please try again.');
+            return;
+          }
+
+          // Show success view
+          document.getElementById('successMsg').textContent =
+            data.message || 'Account created! Check your email to verify before signing in.';
+          document.getElementById('formView').style.display = 'none';
+          document.getElementById('successView').style.display = 'block';
+
+        } catch {
+          showAlert('error', 'Network error — please check your connection and try again.');
+        } finally {
+          setLoading(false);
+        }
+      });
+
+      function showAlert(type, message) {
+        alertEl.className = `alert alert-${type} show`;
+        alertEl.textContent = message;
+        alertEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }
+
+      function clearAlert() {
+        alertEl.className = 'alert';
+        alertEl.textContent = '';
+      }
+
+      function setLoading(loading) {
+        submitBtn.disabled = loading;
+        submitBtn.innerHTML = loading
+          ? '<span class="spinner"></span>Creating account\u2026'
+          : 'Create Account';
+      }
+    })();
+  </script>
+</body>
+</html>
