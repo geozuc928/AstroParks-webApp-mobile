@@ -51,17 +51,18 @@ router.post(
     const { email, license_plate, password } = req.body;
 
     const { rows } = await pool.query(
-      'SELECT id FROM users WHERE email = $1', [email]
+      'SELECT id FROM customers WHERE email = $1', [email]
     );
     if (rows.length > 0) {
       return res.status(409).json({ error: 'An account with that email already exists' });
     }
 
     const password_hash = await bcrypt.hash(password, 12);
+    const username = email.split('@')[0];
 
     await pool.query(
-      'INSERT INTO users (email, license_plate, password_hash) VALUES ($1, $2, $3)',
-      [email, license_plate.toUpperCase(), password_hash]
+      'INSERT INTO customers (email, username, license_plate, password_hash) VALUES ($1, $2, $3, $4)',
+      [email, username, license_plate.toUpperCase(), password_hash]
     );
 
     res.status(201).json({ message: 'Account created! You can now sign in.' });
@@ -82,7 +83,7 @@ router.post(
     const { email, password } = req.body;
 
     const { rows } = await pool.query(
-      'SELECT * FROM users WHERE email = $1', [email]
+      'SELECT * FROM customers WHERE email = $1', [email]
     );
     const user = rows[0];
 

@@ -7,20 +7,16 @@ const pool = new Pool({ connectionString: process.env.DATABASE_URL });
 async function initDb() {
   const client = await pool.connect();
   try {
+    // Use the existing customers table — add missing auth columns if not present
     await client.query(`
-      CREATE TABLE IF NOT EXISTS users (
-        id            SERIAL PRIMARY KEY,
-        email         TEXT UNIQUE NOT NULL,
-        license_plate TEXT NOT NULL,
-        password_hash TEXT NOT NULL,
-        role          TEXT NOT NULL DEFAULT 'user'
-                        CHECK(role IN ('user', 'admin')),
-        created_at    BIGINT DEFAULT EXTRACT(EPOCH FROM NOW())::BIGINT
-      );
+      ALTER TABLE customers
+        ADD COLUMN IF NOT EXISTS password_hash TEXT,
+        ADD COLUMN IF NOT EXISTS role TEXT NOT NULL DEFAULT 'user'
+                                        CHECK(role IN ('user', 'admin'));
     `);
 
     await client.query(
-      `CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);`
+      `CREATE INDEX IF NOT EXISTS idx_customers_email ON customers(email);`
     );
 
     // Seed admin account
@@ -28,16 +24,16 @@ async function initDb() {
     const adminPassword = process.env.ADMIN_PASSWORD || 'AstroAdmin2024!';
 
     const { rows } = await client.query(
-      'SELECT id FROM users WHERE email = $1',
+      'SELECT id FROM customers WHERE email = $1',
       [adminEmail]
     );
 
     if (rows.length === 0) {
       const hash = await bcrypt.hash(adminPassword, 12);
       await client.query(
-        `INSERT INTO users (email, license_plate, password_hash, role)
-         VALUES ($1, $2, $3, 'admin')`,
-        [adminEmail, 'ADMIN-00', hash]
+        `INSERT INTO customers (email, username, license_plate, password_hash, role)
+         VALUES ($1, $2, $3, $4, 'admin')`,
+        [adminEmail, 'admin', 'ADMIN-00', hash]
       );
       console.log(`[DB] Admin seeded: ${adminEmail}`);
     }
