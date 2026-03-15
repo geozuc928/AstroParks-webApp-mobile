@@ -1,7 +1,7 @@
 const express = require('express');
 const { body, validationResult } = require('express-validator');
 
-const db = require('../db');
+const pool = require('../db');
 const authenticate = require('../middleware/authenticate');
 const authorize = require('../middleware/authorize');
 
@@ -11,60 +11,60 @@ const router = express.Router();
 router.use(authenticate);
 
 // ── GET /api/dashboard/users ── Admin: all users ───────────────────────────
-router.get('/users', authorize('admin'), (req, res) => {
-  const users = db.prepare(`
+router.get('/users', authorize('admin'), async (req, res) => {
+  const { rows: users } = await pool.query(`
     SELECT
-      u.id, u.username, u.email, u.phone, u.license_plate,
+      u.id, u.email, u.license_plate,
       u.role, u.is_verified, u.created_at,
       p.name AS property_name
     FROM users u
     LEFT JOIN properties p ON u.property_id = p.id
     ORDER BY u.created_at DESC
-  `).all();
-
+  `);
   res.json({ users });
 });
 
 // ── GET /api/dashboard/my-users ── Manager: users at their property ────────
-router.get('/my-users', authorize('admin', 'manager'), (req, res) => {
+router.get('/my-users', authorize('admin', 'manager'), async (req, res) => {
   let users;
 
   if (req.user.role === 'admin') {
-    users = db.prepare(`
+    const { rows } = await pool.query(`
       SELECT
-        u.id, u.username, u.email, u.phone, u.license_plate,
+        u.id, u.email, u.license_plate,
         u.role, u.is_verified, u.created_at,
         p.name AS property_name
       FROM users u
       LEFT JOIN properties p ON u.property_id = p.id
       ORDER BY u.created_at DESC
-    `).all();
+    `);
+    users = rows;
   } else {
     if (!req.user.property_id) {
       return res.json({ users: [], message: 'No property assigned to your account yet.' });
     }
-    users = db.prepare(`
+    const { rows } = await pool.query(`
       SELECT
-        u.id, u.username, u.email, u.phone, u.license_plate,
+        u.id, u.email, u.license_plate,
         u.role, u.is_verified, u.created_at
       FROM users u
-      WHERE u.property_id = ?
+      WHERE u.property_id = $1
       ORDER BY u.created_at DESC
-    `).all(req.user.property_id);
+    `, [req.user.property_id]);
+    users = rows;
   }
 
   res.json({ users });
 });
 
 // ── GET /api/dashboard/properties ── Admin: all properties ────────────────
-router.get('/properties', authorize('admin'), (req, res) => {
-  const properties = db.prepare(`
-    SELECT p.*, u.username AS manager_name
+router.get('/properties', authorize('admin'), async (req, res) => {
+  const { rows: properties } = await pool.query(`
+    SELECT p.*, u.email AS manager_email
     FROM properties p
     LEFT JOIN users u ON p.manager_id = u.id
     ORDER BY p.created_at DESC
-  `).all();
-
+  `);
   res.json({ properties });
 });
 
@@ -76,14 +76,17 @@ router.post(
     body('name').trim().notEmpty().withMessage('Property name is required'),
     body('location').trim().optional(),
   ],
-  (req, res) => {
+  async (req, res) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return res.status(422).json({ error: errors.array()[0].msg });
     }
     const { name, location } = req.body;
-    const result = db.prepare('INSERT INTO properties (name, location) VALUES (?, ?)').run(name, location || null);
-    res.status(201).json({ id: result.lastInsertRowid, name, location });
+    const { rows } = await pool.query(
+      'INSERT INTO properties (name, location) VALUES ($1, $2) RETURNING id',
+      [name, location || null]
+    );
+    res.status(201).json({ id: rows[0].id, name, location });
   }
 );
 
@@ -96,7 +99,7 @@ router.patch(
       .isIn(['user', 'manager', 'admin'])
       .withMessage('Role must be one of: user, manager, admin'),
   ],
-  (req, res) => {
+  async (req, res) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return res.status(422).json({ error: errors.array()[0].msg });
@@ -105,17 +108,16 @@ router.patch(
     const userId = Number(req.params.id);
     const { role } = req.body;
 
-    // Prevent admin from demoting themselves
     if (userId === req.user.id && role !== 'admin') {
       return res.status(400).json({ error: 'You cannot change your own admin role' });
     }
 
-    const user = db.prepare('SELECT id FROM users WHERE id = ?').get(userId);
-    if (!user) {
+    const { rows } = await pool.query('SELECT id FROM users WHERE id = $1', [userId]);
+    if (rows.length === 0) {
       return res.status(404).json({ error: 'User not found' });
     }
 
-    db.prepare('UPDATE users SET role = ? WHERE id = ?').run(role, userId);
+    await pool.query('UPDATE users SET role = $1 WHERE id = $2', [role, userId]);
     res.json({ message: 'Role updated', userId, role });
   }
 );
@@ -125,7 +127,7 @@ router.patch(
   '/users/:id/property',
   authorize('admin'),
   [body('property_id').isInt({ min: 1 }).withMessage('Valid property ID is required')],
-  (req, res) => {
+  async (req, res) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return res.status(422).json({ error: errors.array()[0].msg });
@@ -134,24 +136,24 @@ router.patch(
     const userId = Number(req.params.id);
     const { property_id } = req.body;
 
-    const property = db.prepare('SELECT id FROM properties WHERE id = ?').get(property_id);
-    if (!property) {
+    const { rows: propRows } = await pool.query('SELECT id FROM properties WHERE id = $1', [property_id]);
+    if (propRows.length === 0) {
       return res.status(404).json({ error: 'Property not found' });
     }
 
-    db.prepare('UPDATE users SET property_id = ? WHERE id = ?').run(property_id, userId);
+    await pool.query('UPDATE users SET property_id = $1 WHERE id = $2', [property_id, userId]);
     res.json({ message: 'Property assigned', userId, property_id });
   }
 );
 
 // ── DELETE /api/dashboard/users/:id ── Admin: delete user ─────────────────
-router.delete('/users/:id', authorize('admin'), (req, res) => {
+router.delete('/users/:id', authorize('admin'), async (req, res) => {
   const userId = Number(req.params.id);
   if (userId === req.user.id) {
     return res.status(400).json({ error: 'You cannot delete your own account from here' });
   }
-  const result = db.prepare('DELETE FROM users WHERE id = ?').run(userId);
-  if (result.changes === 0) {
+  const { rowCount } = await pool.query('DELETE FROM users WHERE id = $1', [userId]);
+  if (rowCount === 0) {
     return res.status(404).json({ error: 'User not found' });
   }
   res.json({ message: 'User deleted' });
