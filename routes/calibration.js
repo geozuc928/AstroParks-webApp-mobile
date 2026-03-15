@@ -1,24 +1,26 @@
 'use strict';
 const express = require('express');
 const router = express.Router();
-const db = require('../db');
+const pool = require('../db');
 
 // GET /api/calibration/:cameraId
-// Returns the full calibration config (spaces + polygons) for a camera
-router.get('/:cameraId', (req, res) => {
+router.get('/:cameraId', async (req, res) => {
   const { cameraId } = req.params;
 
-  const config = db
-    .prepare('SELECT * FROM calibration_configs WHERE camera_id = ?')
-    .get(cameraId);
+  const { rows: configs } = await pool.query(
+    'SELECT * FROM calibration_configs WHERE camera_id = $1',
+    [cameraId]
+  );
+  const config = configs[0];
 
   if (!config) {
     return res.status(404).json({ error: 'No calibration found for this camera' });
   }
 
-  const polygons = db
-    .prepare('SELECT * FROM parking_space_polygons WHERE config_id = ? ORDER BY space_id')
-    .all(config.id);
+  const { rows: polygons } = await pool.query(
+    'SELECT * FROM parking_space_polygons WHERE config_id = $1 ORDER BY space_id',
+    [config.id]
+  );
 
   const spaces = polygons.map(p => ({
     space_id: p.space_id,
@@ -38,88 +40,81 @@ router.get('/:cameraId', (req, res) => {
 });
 
 // GET /api/calibration
-// Returns a list of all calibrated cameras
-router.get('/', (_req, res) => {
-  const configs = db
-    .prepare(`
-      SELECT c.*, COUNT(p.id) AS space_count
-      FROM calibration_configs c
-      LEFT JOIN parking_space_polygons p ON p.config_id = c.id
-      GROUP BY c.id
-      ORDER BY c.updated_at DESC
-    `)
-    .all();
-
+router.get('/', async (_req, res) => {
+  const { rows: configs } = await pool.query(`
+    SELECT c.*, COUNT(p.id)::int AS space_count
+    FROM calibration_configs c
+    LEFT JOIN parking_space_polygons p ON p.config_id = c.id
+    GROUP BY c.id
+    ORDER BY c.updated_at DESC
+  `);
   return res.json(configs);
 });
 
 // POST /api/calibration
-// Creates or replaces the full calibration for a camera
-router.post('/', (req, res) => {
+router.post('/', async (req, res) => {
   const { camera_id, label, img_width, img_height, spaces } = req.body;
 
   if (!camera_id || !Array.isArray(spaces)) {
     return res.status(400).json({ error: 'camera_id and spaces array are required' });
   }
 
-  const saveCalibration = db.transaction(() => {
-    // Upsert the config row
-    db.prepare(`
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+
+    await client.query(`
       INSERT INTO calibration_configs (camera_id, label, img_width, img_height, updated_at)
-      VALUES (?, ?, ?, ?, unixepoch())
+      VALUES ($1, $2, $3, $4, EXTRACT(EPOCH FROM NOW())::BIGINT)
       ON CONFLICT(camera_id) DO UPDATE SET
-        label = excluded.label,
-        img_width = excluded.img_width,
-        img_height = excluded.img_height,
-        updated_at = excluded.updated_at
-    `).run(camera_id, label || 'Parking Lot', img_width || null, img_height || null);
+        label = EXCLUDED.label,
+        img_width = EXCLUDED.img_width,
+        img_height = EXCLUDED.img_height,
+        updated_at = EXCLUDED.updated_at
+    `, [camera_id, label || 'Parking Lot', img_width || null, img_height || null]);
 
-    const config = db
-      .prepare('SELECT id FROM calibration_configs WHERE camera_id = ?')
-      .get(camera_id);
+    const { rows: configRows } = await client.query(
+      'SELECT id FROM calibration_configs WHERE camera_id = $1',
+      [camera_id]
+    );
+    const configId = configRows[0].id;
 
-    // Remove old polygons for this config
-    db.prepare('DELETE FROM parking_space_polygons WHERE config_id = ?').run(config.id);
-
-    // Insert new polygons
-    const insertPolygon = db.prepare(`
-      INSERT INTO parking_space_polygons
-        (config_id, space_id, space_label, section, polygon_points)
-      VALUES (?, ?, ?, ?, ?)
-    `);
+    await client.query('DELETE FROM parking_space_polygons WHERE config_id = $1', [configId]);
 
     for (const space of spaces) {
       if (!space.space_id || !space.section || !Array.isArray(space.polygon)) continue;
-      insertPolygon.run(
-        config.id,
+      await client.query(`
+        INSERT INTO parking_space_polygons
+          (config_id, space_id, space_label, section, polygon_points)
+        VALUES ($1, $2, $3, $4, $5)
+      `, [
+        configId,
         space.space_id,
         space.space_label || `Space ${space.space_id}`,
         space.section,
-        JSON.stringify(space.polygon)
-      );
+        JSON.stringify(space.polygon),
+      ]);
     }
 
-    return config.id;
-  });
-
-  try {
-    const configId = saveCalibration();
+    await client.query('COMMIT');
     return res.json({ success: true, config_id: configId });
   } catch (err) {
+    await client.query('ROLLBACK');
     console.error('[Calibration] Save error:', err);
     return res.status(500).json({ error: 'Failed to save calibration' });
+  } finally {
+    client.release();
   }
 });
 
 // DELETE /api/calibration/:cameraId
-// Removes a calibration config and all its polygons
-router.delete('/:cameraId', (req, res) => {
+router.delete('/:cameraId', async (req, res) => {
   const { cameraId } = req.params;
-  const result = db
-    .prepare('DELETE FROM calibration_configs WHERE camera_id = ?')
-    .run(cameraId);
-
-  if (result.changes === 0) {
+  const { rowCount } = await pool.query(
+    'DELETE FROM calibration_configs WHERE camera_id = $1',
+    [cameraId]
+  );
+  if (rowCount === 0) {
     return res.status(404).json({ error: 'Calibration not found' });
   }
   return res.json({ success: true });

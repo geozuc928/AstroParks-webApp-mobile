@@ -28,15 +28,13 @@
     e.preventDefault();
     clearAlert();
 
-    const username        = document.getElementById('username').value.trim();
     const email           = document.getElementById('email').value.trim();
-    const phone           = document.getElementById('phone').value.trim();
     const license_plate   = plateInput.value.trim();
     const password        = pwInput.value;
     const confirm_password = cpInput.value;
 
     // Client-side validation
-    if (!username || !email || !phone || !license_plate || !password || !confirm_password) {
+    if (!email || !license_plate || !password || !confirm_password) {
       return showAlert('error', 'Please fill in all fields');
     }
     if (password !== confirm_password) {
@@ -52,7 +50,7 @@
       const res  = await fetch('/api/auth/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, email, phone, license_plate, password, confirm_password }),
+        body: JSON.stringify({ email, license_plate, password, confirm_password }),
       });
       const data = await res.json();
 

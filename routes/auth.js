@@ -5,7 +5,7 @@ const jwt = require('jsonwebtoken');
 const { body, query, validationResult } = require('express-validator');
 const rateLimit = require('express-rate-limit');
 
-const db = require('../db');
+const pool = require('../db');
 const { generateToken } = require('../utils/tokens');
 const { sendVerificationEmail, sendPasswordResetEmail } = require('../utils/email');
 
@@ -20,7 +20,6 @@ const loginLimiter = rateLimit({
   legacyHeaders: false,
 });
 
-// Helper: send validation errors
 function validate(req, res) {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
@@ -33,21 +32,11 @@ function validate(req, res) {
 router.post(
   '/register',
   [
-    body('username')
-      .trim()
-      .isLength({ min: 3, max: 30 })
-      .withMessage('Username must be 3–30 characters')
-      .matches(/^[a-zA-Z0-9_]+$/)
-      .withMessage('Username may only contain letters, numbers, and underscores'),
     body('email')
       .trim()
       .isEmail()
       .withMessage('Please enter a valid email address')
       .normalizeEmail(),
-    body('phone')
-      .trim()
-      .matches(/^\+?[\d\s\-().]{7,20}$/)
-      .withMessage('Please enter a valid phone number'),
     body('license_plate')
       .trim()
       .isLength({ min: 2, max: 15 })
@@ -66,23 +55,24 @@ router.post(
     const err = validate(req, res);
     if (err) return;
 
-    const { username, email, phone, license_plate, password } = req.body;
+    const { email, license_plate, password } = req.body;
 
-    // Check uniqueness
-    const existing = db
-      .prepare('SELECT id FROM users WHERE email = ? OR username = ?')
-      .get(email, username);
-    if (existing) {
-      return res.status(409).json({ error: 'An account with that email or username already exists' });
+    const { rows: existing } = await pool.query(
+      'SELECT id FROM users WHERE email = $1',
+      [email]
+    );
+    if (existing.length > 0) {
+      return res.status(409).json({ error: 'An account with that email already exists' });
     }
 
     const password_hash = await bcrypt.hash(password, 12);
     const verification_token = generateToken();
 
-    db.prepare(`
-      INSERT INTO users (username, email, phone, license_plate, password_hash, verification_token)
-      VALUES (?, ?, ?, ?, ?, ?)
-    `).run(username, email, phone, license_plate.toUpperCase(), password_hash, verification_token);
+    await pool.query(
+      `INSERT INTO users (email, license_plate, password_hash, verification_token)
+       VALUES ($1, $2, $3, $4)`,
+      [email, license_plate.toUpperCase(), password_hash, verification_token]
+    );
 
     try {
       await sendVerificationEmail(email, verification_token);
@@ -100,14 +90,16 @@ router.post(
 router.get(
   '/verify-email',
   [query('token').notEmpty().withMessage('Verification token is required')],
-  (req, res) => {
+  async (req, res) => {
     const err = validate(req, res);
     if (err) return;
 
     const { token } = req.query;
-    const user = db
-      .prepare('SELECT id, is_verified FROM users WHERE verification_token = ?')
-      .get(token);
+    const { rows } = await pool.query(
+      'SELECT id, is_verified FROM users WHERE verification_token = $1',
+      [token]
+    );
+    const user = rows[0];
 
     if (!user) {
       return res.status(400).send(`
@@ -122,7 +114,10 @@ router.get(
       return res.redirect('/login.html?verified=already');
     }
 
-    db.prepare('UPDATE users SET is_verified = 1, verification_token = NULL WHERE id = ?').run(user.id);
+    await pool.query(
+      'UPDATE users SET is_verified = 1, verification_token = NULL WHERE id = $1',
+      [user.id]
+    );
 
     res.redirect('/login.html?verified=1');
   }
@@ -133,7 +128,7 @@ router.post(
   '/login',
   loginLimiter,
   [
-    body('identifier').trim().notEmpty().withMessage('Email or username is required'),
+    body('identifier').trim().notEmpty().withMessage('Email is required'),
     body('password').notEmpty().withMessage('Password is required'),
   ],
   async (req, res) => {
@@ -142,9 +137,11 @@ router.post(
 
     const { identifier, password } = req.body;
 
-    const user = db
-      .prepare('SELECT * FROM users WHERE email = ? OR username = ?')
-      .get(identifier.toLowerCase(), identifier);
+    const { rows } = await pool.query(
+      'SELECT * FROM users WHERE email = $1',
+      [identifier.toLowerCase()]
+    );
+    const user = rows[0];
 
     if (!user) {
       return res.status(401).json({ error: 'Invalid credentials' });
@@ -164,7 +161,6 @@ router.post(
 
     const payload = {
       id: user.id,
-      username: user.username,
       email: user.email,
       role: user.role,
       property_id: user.property_id,
@@ -178,13 +174,10 @@ router.post(
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
-      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+      maxAge: 7 * 24 * 60 * 60 * 1000,
     });
 
-    res.json({
-      message: 'Logged in successfully',
-      user: payload,
-    });
+    res.json({ message: 'Logged in successfully', user: payload });
   }
 );
 
@@ -203,16 +196,17 @@ router.post(
     if (err) return;
 
     const { email } = req.body;
-    const user = db.prepare('SELECT id FROM users WHERE email = ?').get(email);
+    const { rows } = await pool.query('SELECT id FROM users WHERE email = $1', [email]);
+    const user = rows[0];
 
-    // Always respond the same way to prevent email enumeration
     if (user) {
       const reset_token = generateToken();
-      const reset_token_expires = Math.floor(Date.now() / 1000) + 3600; // 1 hour
+      const reset_token_expires = Math.floor(Date.now() / 1000) + 3600;
 
-      db.prepare(
-        'UPDATE users SET reset_token = ?, reset_token_expires = ? WHERE id = ?'
-      ).run(reset_token, reset_token_expires, user.id);
+      await pool.query(
+        'UPDATE users SET reset_token = $1, reset_token_expires = $2 WHERE id = $3',
+        [reset_token, reset_token_expires, user.id]
+      );
 
       try {
         await sendPasswordResetEmail(email, reset_token);
@@ -247,18 +241,21 @@ router.post(
     const { token, password } = req.body;
     const now = Math.floor(Date.now() / 1000);
 
-    const user = db
-      .prepare('SELECT id FROM users WHERE reset_token = ? AND reset_token_expires > ?')
-      .get(token, now);
+    const { rows } = await pool.query(
+      'SELECT id FROM users WHERE reset_token = $1 AND reset_token_expires > $2',
+      [token, now]
+    );
+    const user = rows[0];
 
     if (!user) {
       return res.status(400).json({ error: 'Invalid or expired reset link. Please request a new one.' });
     }
 
     const password_hash = await bcrypt.hash(password, 12);
-    db.prepare(
-      'UPDATE users SET password_hash = ?, reset_token = NULL, reset_token_expires = NULL WHERE id = ?'
-    ).run(password_hash, user.id);
+    await pool.query(
+      'UPDATE users SET password_hash = $1, reset_token = NULL, reset_token_expires = NULL WHERE id = $2',
+      [password_hash, user.id]
+    );
 
     res.json({ message: 'Password updated successfully. You can now log in.' });
   }
